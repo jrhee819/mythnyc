@@ -91,9 +91,15 @@
   </svg>
 
   <div class="quote-bubble-stage quote-bubble-stage--{{ bubble_side }}">
+    {%- if section.settings.click_to_shuffle -%}
+      {%- assign trigger_attrs = 'data-quote-bubble-trigger role="button" tabindex="0" aria-label="Show another quote"' -%}
+    {%- else -%}
+      {%- assign trigger_attrs = '' -%}
+    {%- endif -%}
     {%- if section.settings.character_image != blank -%}
       <img
-        class="quote-bubble-character"
+        class="quote-bubble-character{% if section.settings.click_to_shuffle %} quote-bubble-character--clickable{% endif %}"
+        {{ trigger_attrs }}
         src="{{ section.settings.character_image | image_url: width: 1200 }}"
         srcset="
           {{ section.settings.character_image | image_url: width: 400 }} 400w,
@@ -107,7 +113,10 @@
         loading="eager"
       >
     {%- else -%}
-      <div class="quote-bubble-character quote-bubble-character--placeholder">
+      <div
+        class="quote-bubble-character quote-bubble-character--placeholder{% if section.settings.click_to_shuffle %} quote-bubble-character--clickable{% endif %}"
+        {{ trigger_attrs }}
+      >
         {{ 'image' | placeholder_svg_tag }}
       </div>
     {%- endif -%}
@@ -121,7 +130,7 @@
           loading="eager"
         >
       {%- endif -%}
-      <p class="quote-bubble-text" data-quote-bubble-text></p>
+      <p class="quote-bubble-text" data-quote-bubble-text aria-live="polite"></p>
     </div>
   </div>
 </div>
@@ -140,6 +149,9 @@
     var textEl = root.querySelector('[data-quote-bubble-text]');
     if (!textEl) return;
 
+    var bubbleEl = textEl.closest('.quote-bubble');
+    var triggerEl = root.querySelector('[data-quote-bubble-trigger]');
+
     var quotes = [];
     try {
       quotes = JSON.parse(dataEl.textContent)
@@ -154,8 +166,36 @@
       return;
     }
 
-    var pick = quotes[Math.floor(Math.random() * quotes.length)];
-    textEl.textContent = pick;
+    var lastIndex = -1;
+
+    function showRandomQuote() {
+      var index = Math.floor(Math.random() * quotes.length);
+      // Avoid repeating the same quote twice in a row when clicked.
+      if (quotes.length > 1 && index === lastIndex) {
+        index = (index + 1) % quotes.length;
+      }
+      lastIndex = index;
+      textEl.textContent = quotes[index];
+
+      if (bubbleEl) {
+        bubbleEl.classList.remove('quote-bubble--pop');
+        // Force a reflow so the animation can restart on repeated clicks.
+        void bubbleEl.offsetWidth;
+        bubbleEl.classList.add('quote-bubble--pop');
+      }
+    }
+
+    showRandomQuote();
+
+    if (triggerEl) {
+      triggerEl.addEventListener('click', showRandomQuote);
+      triggerEl.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+          event.preventDefault();
+          showRandomQuote();
+        }
+      });
+    }
   })();
 </script>
 
@@ -180,6 +220,20 @@
     max-width: var(--char-max-width);
     height: auto;
     transform: translate(var(--char-offset-x), var(--char-offset-y));
+    transition: transform 0.15s ease;
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble-character--clickable {
+    cursor: pointer;
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble-character--clickable:active {
+    transform: translate(var(--char-offset-x), var(--char-offset-y)) scale(0.96);
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble-character--clickable:focus-visible {
+    outline: 2px solid var(--bubble-bg);
+    outline-offset: 4px;
   }
 
   #quote-bubble-section-{{ section.id }} .quote-bubble-character--placeholder svg {
@@ -190,6 +244,16 @@
   #quote-bubble-section-{{ section.id }} .quote-bubble {
     position: absolute;
     width: var(--bubble-width);
+  }
+
+  @keyframes quote-bubble-pop-{{ section.id }} {
+    0% { transform: scale(0.92); }
+    60% { transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble--pop {
+    animation: quote-bubble-pop-{{ section.id }} 0.28s ease;
   }
 
   #quote-bubble-section-{{ section.id }} .quote-bubble--top-right {
@@ -498,10 +562,17 @@
       "content": "Quotes"
     },
     {
+      "type": "checkbox",
+      "id": "click_to_shuffle",
+      "label": "Click character for a new quote",
+      "info": "Clicking or tapping the character shows a new random quote instantly, without reloading the page.",
+      "default": true
+    },
+    {
       "type": "textarea",
       "id": "quotes",
       "label": "Quotes (one per line)",
-      "info": "A random line is shown each time the page loads.",
+      "info": "A random line is shown each time the page loads (and again on click, if enabled above).",
       "default": "Welcome to the shop!\nNew drops every week.\nMade in NYC.\nGrab something before it's gone."
     },
     {

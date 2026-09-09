@@ -43,6 +43,11 @@ manage in the theme customizer and shows it in the bubble.
      exact position inside the bubble with the horizontal/vertical offset
      sliders (useful for centering it just right on an uploaded bubble
      image).
+   - **Click character for a new quote** (on by default) makes the
+     character itself clickable/tappable — clicking it shows a new random
+     quote instantly, with a small pop animation, no page reload. It won't
+     repeat the same quote twice in a row. Uncheck it if you'd rather the
+     character not be interactive.
    - Edit the **Quotes** field — one quote per line. Add as many as you
      like; a random one is chosen each time the page loads.
 6. Save.
@@ -77,11 +82,20 @@ completely independent copies instead:
 ## How the randomization works
 
 The quotes are rendered into a small inline JSON `<script>` tag, and a tiny
-inline script picks `quotes[Math.floor(Math.random() * quotes.length)]` and
-writes it into the bubble's text element on page load. No external JS file,
-no app, no extra network request — it reruns on every full page load, which
+inline script picks a random one and writes it into the bubble's text
+element — once on page load, and again on every click if **Click character
+for a new quote** is on. No external JS file, no app, no extra network
+request. Page-load randomization reruns on every full page load, which
 covers a manual refresh and normal Shopify navigation (Shopify's default
-Online Store theme does full page loads on navigation).
+Online Store theme does full page loads on navigation); click-to-shuffle
+works entirely client-side with no reload at all, and remembers the last
+quote shown so it never repeats the same one twice in a row.
+
+Accessibility: the clickable character gets `role="button"`,
+`tabindex="0"`, and a visible focus ring, so it's reachable and
+activatable (Enter/Space) via keyboard too, not just mouse/touch; the quote
+text has `aria-live="polite"` so screen readers announce the new quote
+when it changes.
 
 ## Notes / limitations
 

@@ -16,6 +16,15 @@
 {%- liquid
   assign bubble_side = section.settings.bubble_position
   assign raw_quotes = section.settings.quotes | newline_to_br | split: '<br />'
+
+  case section.settings.character_align
+    when 'left'
+      assign char_align = 'flex-start'
+    when 'right'
+      assign char_align = 'flex-end'
+    else
+      assign char_align = 'center'
+  endcase
 -%}
 
 <div
@@ -23,7 +32,11 @@
   id="quote-bubble-section-{{ section.id }}"
   style="
     --char-max-width: {{ section.settings.character_max_width }}px;
-    --bubble-max-width: {{ section.settings.bubble_max_width }}px;
+    --char-align: {{ char_align }};
+    --char-offset-x: {{ section.settings.character_offset_x }}px;
+    --char-offset-y: {{ section.settings.character_offset_y }}px;
+    --bubble-width: {{ section.settings.bubble_width }}px;
+    --bubble-height: {{ section.settings.bubble_height }}px;
     --bubble-offset-x: {{ section.settings.bubble_offset_x }}px;
     --bubble-offset-y: {{ section.settings.bubble_offset_y }}px;
     --bubble-bg: {{ section.settings.bubble_bg_color }};
@@ -102,6 +115,8 @@
 
 <style>
   #quote-bubble-section-{{ section.id }} {
+    display: flex;
+    justify-content: var(--char-align);
     padding: {{ section.settings.padding_top }}px 1rem {{ section.settings.padding_bottom }}px;
   }
 
@@ -109,7 +124,6 @@
     position: relative;
     display: inline-flex;
     max-width: 100%;
-    margin: 0 auto;
   }
 
   #quote-bubble-section-{{ section.id }} .quote-bubble-character {
@@ -117,6 +131,7 @@
     width: 100%;
     max-width: var(--char-max-width);
     height: auto;
+    transform: translate(var(--char-offset-x), var(--char-offset-y));
   }
 
   #quote-bubble-section-{{ section.id }} .quote-bubble-character--placeholder svg {
@@ -126,8 +141,7 @@
 
   #quote-bubble-section-{{ section.id }} .quote-bubble {
     position: absolute;
-    max-width: var(--bubble-max-width);
-    min-width: 140px;
+    width: var(--bubble-width);
   }
 
   #quote-bubble-section-{{ section.id }} .quote-bubble--top-right {
@@ -143,12 +157,14 @@
   /* Speech-bubble image variant: text is layered on top of the artwork */
   #quote-bubble-section-{{ section.id }} .quote-bubble--has-image {
     display: grid;
+    height: var(--bubble-height);
   }
 
   #quote-bubble-section-{{ section.id }} .quote-bubble-image {
     grid-area: 1 / 1;
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: contain;
     display: block;
   }
 
@@ -163,6 +179,11 @@
   /* CSS-drawn fallback bubble, used when no bubble image is uploaded */
   #quote-bubble-section-{{ section.id }} .quote-bubble:not(.quote-bubble--has-image) .quote-bubble-text {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: var(--bubble-height);
     background: var(--bubble-bg);
     color: var(--bubble-color);
     border-radius: 18px;
@@ -204,9 +225,20 @@
       gap: 12px;
     }
 
+    #quote-bubble-section-{{ section.id }} .quote-bubble-character {
+      /* Position offsets are meant for desktop layout; ignore them on
+         mobile where the character and bubble stack vertically instead. */
+      transform: none;
+    }
+
     #quote-bubble-section-{{ section.id }} .quote-bubble {
       position: static;
-      max-width: min(90vw, var(--bubble-max-width));
+      width: min(90vw, var(--bubble-width));
+      height: auto;
+    }
+
+    #quote-bubble-section-{{ section.id }} .quote-bubble:not(.quote-bubble--has-image) .quote-bubble-text {
+      min-height: 0;
     }
   }
 </style>
@@ -233,6 +265,38 @@
       "step": 10,
       "unit": "px",
       "default": 320
+    },
+    {
+      "type": "select",
+      "id": "character_align",
+      "label": "Character position on page",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "character_offset_x",
+      "label": "Character horizontal nudge",
+      "info": "Fine-tune the character's position without moving the speech bubble, which stays anchored to it.",
+      "min": -150,
+      "max": 150,
+      "step": 5,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "character_offset_y",
+      "label": "Character vertical nudge",
+      "min": -150,
+      "max": 150,
+      "step": 5,
+      "unit": "px",
+      "default": 0
     },
     {
       "type": "header",
@@ -276,13 +340,24 @@
     },
     {
       "type": "range",
-      "id": "bubble_max_width",
-      "label": "Bubble max width",
-      "min": 150,
+      "id": "bubble_width",
+      "label": "Bubble width",
+      "min": 100,
       "max": 500,
       "step": 10,
       "unit": "px",
       "default": 260
+    },
+    {
+      "type": "range",
+      "id": "bubble_height",
+      "label": "Bubble height",
+      "info": "For an uploaded bubble image, the artwork scales to fit inside this height without distorting. For the drawn bubble, this is a minimum height — it grows to fit longer quotes.",
+      "min": 60,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "default": 140
     },
     {
       "type": "color",

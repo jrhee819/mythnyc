@@ -22,10 +22,17 @@ manage in the theme customizer and shows it in the bubble.
 3. Go to **Online Store → Themes → Customize**, open the **Home page**.
 4. Click **Add section**, choose **Character Quote Bubble**.
 5. In the section settings:
-   - Upload your **Character image** (your PNG).
+   - Upload your **Character image** (your PNG). Use **Character position on
+     page** (left/center/right) to place it within the section, and the
+     **Character horizontal/vertical nudge** sliders to fine-tune its exact
+     position — the speech bubble stays anchored to the character and moves
+     with it.
    - Optionally upload a **Speech bubble image**. If you leave it blank, a
      simple rounded bubble is drawn with CSS using the color settings below
-     it (with a little tail pointing at the character).
+     it (with a little tail pointing at the character). Use **Bubble width**
+     and **Bubble height** to resize it — an uploaded bubble image scales to
+     fit inside that box without distorting; the drawn bubble treats height
+     as a minimum and grows for longer quotes.
    - Set **Bubble position** (top-left/top-right of the character) and
      nudge it into place with the offset sliders.
    - Edit the **Quotes** field — one quote per line. Add as many as you

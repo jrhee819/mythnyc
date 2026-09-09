@@ -34,6 +34,14 @@
     else
       assign text_justify = 'center'
   endcase
+
+  # Font size needs to shrink at the same rate as the bubble itself once
+  # --bubble-width's viewport-percentage cap kicks in on a narrow screen —
+  # otherwise text stays close to full size while its container shrinks
+  # around it, and gets clipped by the bubble's own clip-path shape. Tying
+  # it to a ratio of bubble width (rather than its own separate vw cap)
+  # keeps the same font-to-bubble proportion at every screen size.
+  assign font_ratio = section.settings.font_size | times: 1.0 | divided_by: section.settings.bubble_width | round: 4
 -%}
 
 <div
@@ -53,7 +61,7 @@
     --bubble-font-family: {{ section.settings.font_family.family }}, {{ section.settings.font_family.fallback_families }};
     --bubble-font-weight: {{ section.settings.font_family.weight }};
     --bubble-font-style: {{ section.settings.font_family.style }};
-    --bubble-font-size: min({{ section.settings.font_size }}px, 5vw);
+    --bubble-font-size: clamp(10px, calc(var(--bubble-width) * {{ font_ratio }}), {{ section.settings.font_size }}px);
     --bubble-text-align: {{ section.settings.text_align }};
     --bubble-text-justify: {{ text_justify }};
     --bubble-text-offset-x: {{ section.settings.text_offset_x }}px;

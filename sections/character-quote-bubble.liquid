@@ -64,17 +64,20 @@
     Traced from the uploaded reference: a circle body with a small hooked
     tail on the lower-left. clipPathUnits="objectBoundingBox" lets the
     same normalized (0–1) path scale to whatever size the bubble box ends
-    up being. A second, horizontally mirrored copy is used when the
-    bubble sits to the left of the character, so the tail always points
-    back toward it.
+    up being. The circular part is a dense line-segment polyline rather
+    than an SVG arc command — some browsers scale elliptical arcs
+    incorrectly inside an objectBoundingBox clip-path, so this sidesteps
+    that instead of relying on it. A second, horizontally mirrored copy
+    is used when the bubble sits to the left of the character, so the
+    tail always points back toward it.
   {%- endcomment -%}
   <svg width="0" height="0" style="position: absolute;" aria-hidden="true" focusable="false">
     <defs>
       <clipPath id="quote-bubble-clip-{{ section.id }}" clipPathUnits="objectBoundingBox">
-        <path d="M0.170,0.610 A0.416,0.473 0 1 0 0.170,0.366 C0.086,0.358 0,0.423 0.014,0.520 C0.029,0.585 0.100,0.610 0.170,0.610 Z" />
+        <path d="M0.170,0.610 L0.1857,0.6638 L0.2070,0.7152 L0.2336,0.7632 L0.2650,0.8073 L0.3008,0.8468 L0.3406,0.8811 L0.3836,0.9098 L0.4294,0.9324 L0.4772,0.9486 L0.5264,0.9582 L0.5763,0.9610 L0.6260,0.9570 L0.6750,0.9462 L0.7225,0.9289 L0.7679,0.9052 L0.8104,0.8755 L0.8495,0.8403 L0.8846,0.8000 L0.9152,0.7551 L0.9409,0.7065 L0.9612,0.6547 L0.9760,0.6005 L0.9849,0.5446 L0.9879,0.4880 L0.9849,0.4314 L0.9760,0.3755 L0.9612,0.3213 L0.9409,0.2695 L0.9152,0.2209 L0.8846,0.1760 L0.8495,0.1357 L0.8104,0.1005 L0.7679,0.0708 L0.7225,0.0471 L0.6750,0.0298 L0.6260,0.0190 L0.5763,0.0150 L0.5264,0.0178 L0.4772,0.0274 L0.4294,0.0436 L0.3836,0.0662 L0.3406,0.0949 L0.3008,0.1292 L0.2650,0.1687 L0.2336,0.2128 L0.2070,0.2608 L0.1857,0.3122 L0.1700,0.3660 C0.086,0.358 0,0.423 0.014,0.520 C0.029,0.585 0.100,0.610 0.170,0.610 Z" />
       </clipPath>
       <clipPath id="quote-bubble-clip-mirrored-{{ section.id }}" clipPathUnits="objectBoundingBox">
-        <path d="M0.830,0.610 A0.416,0.473 0 1 1 0.830,0.366 C0.914,0.358 1,0.423 0.986,0.520 C0.971,0.585 0.900,0.610 0.830,0.610 Z" />
+        <path d="M0.830,0.610 L0.8143,0.6638 L0.7930,0.7152 L0.7664,0.7632 L0.7350,0.8073 L0.6992,0.8468 L0.6594,0.8811 L0.6164,0.9098 L0.5706,0.9324 L0.5228,0.9486 L0.4736,0.9582 L0.4237,0.9610 L0.3740,0.9570 L0.3250,0.9462 L0.2775,0.9289 L0.2321,0.9052 L0.1896,0.8755 L0.1505,0.8403 L0.1154,0.8000 L0.0848,0.7551 L0.0591,0.7065 L0.0388,0.6547 L0.0240,0.6005 L0.0151,0.5446 L0.0121,0.4880 L0.0151,0.4314 L0.0240,0.3755 L0.0388,0.3213 L0.0591,0.2695 L0.0848,0.2209 L0.1154,0.1760 L0.1505,0.1357 L0.1896,0.1005 L0.2321,0.0708 L0.2775,0.0471 L0.3250,0.0298 L0.3740,0.0190 L0.4237,0.0150 L0.4736,0.0178 L0.5228,0.0274 L0.5706,0.0436 L0.6164,0.0662 L0.6594,0.0949 L0.6992,0.1292 L0.7350,0.1687 L0.7664,0.2128 L0.7930,0.2608 L0.8143,0.3122 L0.8300,0.3660 C0.914,0.358 1,0.423 0.986,0.520 C0.971,0.585 0.900,0.610 0.830,0.610 Z" />
       </clipPath>
     </defs>
   </svg>

@@ -35,6 +35,11 @@ manage in the theme customizer and shows it in the bubble.
      as a minimum and grows for longer quotes.
    - Set **Bubble position** (top-left/top-right of the character) and
      nudge it into place with the offset sliders.
+   - Under **Text**, pick a **Quote font** from your theme's font library,
+     set **Quote font size**, **Text alignment**, and nudge the quote's
+     exact position inside the bubble with the horizontal/vertical offset
+     sliders (useful for centering it just right on an uploaded bubble
+     image).
    - Edit the **Quotes** field — one quote per line. Add as many as you
      like; a random one is chosen each time the page loads.
 6. Save.

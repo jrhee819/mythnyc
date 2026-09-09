@@ -25,6 +25,15 @@
     else
       assign char_align = 'center'
   endcase
+
+  case section.settings.text_align
+    when 'left'
+      assign text_justify = 'start'
+    when 'right'
+      assign text_justify = 'end'
+    else
+      assign text_justify = 'center'
+  endcase
 -%}
 
 <div
@@ -41,7 +50,14 @@
     --bubble-offset-y: {{ section.settings.bubble_offset_y }}px;
     --bubble-bg: {{ section.settings.bubble_bg_color }};
     --bubble-color: {{ section.settings.bubble_text_color }};
+    --bubble-font-family: {{ section.settings.font_family.family }}, {{ section.settings.font_family.fallback_families }};
+    --bubble-font-weight: {{ section.settings.font_family.weight }};
+    --bubble-font-style: {{ section.settings.font_family.style }};
     --bubble-font-size: {{ section.settings.font_size }}px;
+    --bubble-text-align: {{ section.settings.text_align }};
+    --bubble-text-justify: {{ text_justify }};
+    --bubble-text-offset-x: {{ section.settings.text_offset_x }}px;
+    --bubble-text-offset-y: {{ section.settings.text_offset_y }}px;
   "
 >
   <div class="quote-bubble-stage">
@@ -114,6 +130,8 @@
 </script>
 
 <style>
+  {{ section.settings.font_family | font_face: font_display: 'swap' }}
+
   #quote-bubble-section-{{ section.id }} {
     display: flex;
     justify-content: var(--char-align);
@@ -171,8 +189,7 @@
   #quote-bubble-section-{{ section.id }} .quote-bubble--has-image .quote-bubble-text {
     grid-area: 1 / 1;
     align-self: center;
-    justify-self: center;
-    text-align: center;
+    justify-self: var(--bubble-text-justify);
     padding: 12% 16%;
   }
 
@@ -181,7 +198,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: var(--bubble-text-justify);
     box-sizing: border-box;
     min-height: var(--bubble-height);
     background: var(--bubble-bg);
@@ -213,8 +230,13 @@
 
   #quote-bubble-section-{{ section.id }} .quote-bubble-text {
     margin: 0;
+    font-family: var(--bubble-font-family);
+    font-weight: var(--bubble-font-weight);
+    font-style: var(--bubble-font-style);
     font-size: var(--bubble-font-size);
     line-height: 1.35;
+    text-align: var(--bubble-text-align);
+    transform: translate(var(--bubble-text-offset-x), var(--bubble-text-offset-y));
   }
 
   @media (max-width: 749px) {
@@ -225,7 +247,8 @@
       gap: 12px;
     }
 
-    #quote-bubble-section-{{ section.id }} .quote-bubble-character {
+    #quote-bubble-section-{{ section.id }} .quote-bubble-character,
+    #quote-bubble-section-{{ section.id }} .quote-bubble-text {
       /* Position offsets are meant for desktop layout; ignore them on
          mobile where the character and bubble stack vertically instead. */
       transform: none;
@@ -372,6 +395,16 @@
       "default": "#111111"
     },
     {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "font_picker",
+      "id": "font_family",
+      "label": "Quote font",
+      "default": "assistant_n4"
+    },
+    {
       "type": "range",
       "id": "font_size",
       "label": "Quote font size",
@@ -380,6 +413,38 @@
       "step": 1,
       "unit": "px",
       "default": 16
+    },
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "text_offset_x",
+      "label": "Text horizontal nudge",
+      "info": "Fine-tune where the quote sits inside the bubble — handy for lining it up with an uploaded bubble image.",
+      "min": -100,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "text_offset_y",
+      "label": "Text vertical nudge",
+      "min": -100,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 0
     },
     {
       "type": "header",

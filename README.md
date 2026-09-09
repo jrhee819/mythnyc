@@ -45,11 +45,19 @@ manage in the theme customizer and shows it in the bubble.
      image).
    - Edit the **Quotes** field — one quote per line. Add as many as you
      like; a random one is chosen each time the page loads.
-   - Under **Mobile**, **Mobile scale** shrinks the whole character +
-     bubble composition on screens under 750px wide — everything (sizes,
-     offsets, font size) scales down together by that percentage, keeping
-     the exact same side-by-side layout as desktop instead of stacking.
 6. Save.
+
+## Mobile sizing
+
+There's no separate mobile setting to configure — the character width,
+bubble width/height, and quote font size are all defined as
+`min(your px setting, a % of the viewport width)`, so they scale down
+smoothly and automatically as the screen narrows, using nothing but the
+same settings you already set for desktop. On a wide screen the px value
+wins (full desktop size, unchanged); on a narrow phone the viewport
+percentage kicks in and shrinks it proportionally. The character and
+bubble keep the same side-by-side layout at every width — nothing
+restacks vertically.
 
 ## How the randomization works
 

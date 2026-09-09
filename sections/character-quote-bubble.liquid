@@ -34,34 +34,18 @@
     else
       assign text_justify = 'center'
   endcase
-
-  # Mobile keeps the exact same layout as desktop (character + bubble
-  # positioned the same way relative to each other) just at a smaller
-  # scale, so every size/offset is recomputed here rather than switching
-  # to a different mobile layout.
-  assign mobile_scale = section.settings.mobile_scale | times: 1.0 | divided_by: 100
-  assign m_char_max_width = section.settings.character_max_width | times: mobile_scale | round
-  assign m_char_offset_x = section.settings.character_offset_x | times: mobile_scale | round
-  assign m_char_offset_y = section.settings.character_offset_y | times: mobile_scale | round
-  assign m_bubble_width = section.settings.bubble_width | times: mobile_scale | round
-  assign m_bubble_height = section.settings.bubble_height | times: mobile_scale | round
-  assign m_bubble_offset_x = section.settings.bubble_offset_x | times: mobile_scale | round
-  assign m_bubble_offset_y = section.settings.bubble_offset_y | times: mobile_scale | round
-  assign m_font_size = section.settings.font_size | times: mobile_scale | round
-  assign m_text_offset_x = section.settings.text_offset_x | times: mobile_scale | round
-  assign m_text_offset_y = section.settings.text_offset_y | times: mobile_scale | round
 -%}
 
 <div
   class="quote-bubble-section"
   id="quote-bubble-section-{{ section.id }}"
   style="
-    --char-max-width: {{ section.settings.character_max_width }}px;
+    --char-max-width: min({{ section.settings.character_max_width }}px, 40vw);
     --char-align: {{ char_align }};
     --char-offset-x: {{ section.settings.character_offset_x }}px;
     --char-offset-y: {{ section.settings.character_offset_y }}px;
-    --bubble-width: {{ section.settings.bubble_width }}px;
-    --bubble-height: {{ section.settings.bubble_height }}px;
+    --bubble-width: min({{ section.settings.bubble_width }}px, 34vw);
+    --bubble-height: min({{ section.settings.bubble_height }}px, 30vw);
     --bubble-offset-x: {{ section.settings.bubble_offset_x }}px;
     --bubble-offset-y: {{ section.settings.bubble_offset_y }}px;
     --bubble-bg: {{ section.settings.bubble_bg_color }};
@@ -69,21 +53,11 @@
     --bubble-font-family: {{ section.settings.font_family.family }}, {{ section.settings.font_family.fallback_families }};
     --bubble-font-weight: {{ section.settings.font_family.weight }};
     --bubble-font-style: {{ section.settings.font_family.style }};
-    --bubble-font-size: {{ section.settings.font_size }}px;
+    --bubble-font-size: min({{ section.settings.font_size }}px, 5vw);
     --bubble-text-align: {{ section.settings.text_align }};
     --bubble-text-justify: {{ text_justify }};
     --bubble-text-offset-x: {{ section.settings.text_offset_x }}px;
     --bubble-text-offset-y: {{ section.settings.text_offset_y }}px;
-    --char-max-width-mobile: {{ m_char_max_width }}px;
-    --char-offset-x-mobile: {{ m_char_offset_x }}px;
-    --char-offset-y-mobile: {{ m_char_offset_y }}px;
-    --bubble-width-mobile: {{ m_bubble_width }}px;
-    --bubble-height-mobile: {{ m_bubble_height }}px;
-    --bubble-offset-x-mobile: {{ m_bubble_offset_x }}px;
-    --bubble-offset-y-mobile: {{ m_bubble_offset_y }}px;
-    --bubble-font-size-mobile: {{ m_font_size }}px;
-    --bubble-text-offset-x-mobile: {{ m_text_offset_x }}px;
-    --bubble-text-offset-y-mobile: {{ m_text_offset_y }}px;
   "
 >
   {%- comment -%}
@@ -118,7 +92,7 @@
           {{ section.settings.character_image | image_url: width: 800 }} 800w,
           {{ section.settings.character_image | image_url: width: 1200 }} 1200w
         "
-        sizes="(max-width: 749px) 220px, {{ section.settings.character_max_width }}px"
+        sizes="min({{ section.settings.character_max_width }}px, 40vw)"
         alt="{{ section.settings.character_image.alt | default: shop.name | escape }}"
         width="{{ section.settings.character_image.width }}"
         height="{{ section.settings.character_image.height }}"
@@ -278,59 +252,23 @@
     transform: translate(var(--bubble-text-offset-x), var(--bubble-text-offset-y));
   }
 
-  /* Mobile keeps the exact same layout as desktop — character and bubble
-     positioned the same way relative to each other, absolutely-positioned
-     bubble included — just scaled down using the *-mobile custom
-     properties computed above (Bubble position setting still controls
-     which side the bubble/tail is on). */
+  /* Character width, bubble width/height, and font-size are already fluid
+     (each is min(your px setting, a viewport-width percentage) — see the
+     custom properties above), so they shrink continuously as the screen
+     narrows with no breakpoint needed and nothing here to keep in sync.
+     The one thing that still needs a fix at narrow widths: the bubble is
+     absolutely positioned, so it isn't counted in the stage's own box
+     width, which can push it off-screen once it's wide relative to the
+     viewport even after the fluid shrink above. Reserving margin equal to
+     its offset + width corrects that, so the character+bubble pair gets
+     centered/aligned as one unit instead of overflowing. */
   @media (max-width: 749px) {
-    /* The bubble is absolutely positioned, so it isn't counted in the
-       stage's own box width — without this, centering/aligning the stage
-       can push a bubble that's wide relative to the viewport off-screen.
-       Reserving margin equal to its offset + width fixes that, so the
-       character+bubble pair gets centered/aligned as one unit. */
     #quote-bubble-section-{{ section.id }} .quote-bubble-stage--top-right {
-      margin-right: calc(var(--bubble-offset-x-mobile) + var(--bubble-width-mobile));
+      margin-right: calc(var(--bubble-offset-x) + var(--bubble-width));
     }
 
     #quote-bubble-section-{{ section.id }} .quote-bubble-stage--top-left {
-      margin-left: calc(var(--bubble-offset-x-mobile) + var(--bubble-width-mobile));
-    }
-
-    #quote-bubble-section-{{ section.id }} .quote-bubble-character {
-      max-width: min(70vw, var(--char-max-width-mobile));
-      transform: translate(var(--char-offset-x-mobile), var(--char-offset-y-mobile));
-    }
-
-    #quote-bubble-section-{{ section.id }} .quote-bubble-character--placeholder svg {
-      width: min(70vw, var(--char-max-width-mobile));
-    }
-
-    #quote-bubble-section-{{ section.id }} .quote-bubble {
-      width: min(80vw, var(--bubble-width-mobile));
-    }
-
-    #quote-bubble-section-{{ section.id }} .quote-bubble--top-right {
-      top: var(--bubble-offset-y-mobile);
-      left: calc(100% + var(--bubble-offset-x-mobile));
-    }
-
-    #quote-bubble-section-{{ section.id }} .quote-bubble--top-left {
-      top: var(--bubble-offset-y-mobile);
-      right: calc(100% + var(--bubble-offset-x-mobile));
-    }
-
-    #quote-bubble-section-{{ section.id }} .quote-bubble--has-image {
-      height: var(--bubble-height-mobile);
-    }
-
-    #quote-bubble-section-{{ section.id }} .quote-bubble:not(.quote-bubble--has-image) .quote-bubble-text {
-      min-height: var(--bubble-height-mobile);
-    }
-
-    #quote-bubble-section-{{ section.id }} .quote-bubble-text {
-      font-size: var(--bubble-font-size-mobile);
-      transform: translate(var(--bubble-text-offset-x-mobile), var(--bubble-text-offset-y-mobile));
+      margin-left: calc(var(--bubble-offset-x) + var(--bubble-width));
     }
   }
 </style>
@@ -514,21 +452,6 @@
       "step": 5,
       "unit": "px",
       "default": 0
-    },
-    {
-      "type": "header",
-      "content": "Mobile"
-    },
-    {
-      "type": "range",
-      "id": "mobile_scale",
-      "label": "Mobile scale",
-      "info": "Shrinks the whole character + speech bubble composition on small screens (below 750px) by this percentage, keeping the exact same layout and positions as desktop.",
-      "min": 30,
-      "max": 100,
-      "step": 5,
-      "unit": "%",
-      "default": 65
     },
     {
       "type": "header",

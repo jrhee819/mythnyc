@@ -1,0 +1,351 @@
+{% comment %}
+  Character Quote Bubble
+  -----------------------
+  Renders your character image with a speech bubble that displays a random
+  quote from the "quotes" list every time the page loads/refreshes.
+
+  Install:
+    1. Shopify admin → Online Store → Themes → Edit code.
+    2. Under "Sections", click "Add a new section", name it
+       "character-quote-bubble" and paste this file's contents.
+    3. Go to the theme customizer → Home page → Add section →
+       "Character Quote Bubble" → upload your character PNG (and, optionally,
+       a speech-bubble PNG) and edit the quotes list.
+{% endcomment %}
+
+{%- liquid
+  assign bubble_side = section.settings.bubble_position
+  assign raw_quotes = section.settings.quotes | newline_to_br | split: '<br />'
+-%}
+
+<div
+  class="quote-bubble-section"
+  id="quote-bubble-section-{{ section.id }}"
+  style="
+    --char-max-width: {{ section.settings.character_max_width }}px;
+    --bubble-max-width: {{ section.settings.bubble_max_width }}px;
+    --bubble-offset-x: {{ section.settings.bubble_offset_x }}px;
+    --bubble-offset-y: {{ section.settings.bubble_offset_y }}px;
+    --bubble-bg: {{ section.settings.bubble_bg_color }};
+    --bubble-color: {{ section.settings.bubble_text_color }};
+    --bubble-font-size: {{ section.settings.font_size }}px;
+  "
+>
+  <div class="quote-bubble-stage">
+    {%- if section.settings.character_image != blank -%}
+      <img
+        class="quote-bubble-character"
+        src="{{ section.settings.character_image | image_url: width: 1200 }}"
+        srcset="
+          {{ section.settings.character_image | image_url: width: 400 }} 400w,
+          {{ section.settings.character_image | image_url: width: 800 }} 800w,
+          {{ section.settings.character_image | image_url: width: 1200 }} 1200w
+        "
+        sizes="(max-width: 749px) 220px, {{ section.settings.character_max_width }}px"
+        alt="{{ section.settings.character_image.alt | default: shop.name | escape }}"
+        width="{{ section.settings.character_image.width }}"
+        height="{{ section.settings.character_image.height }}"
+        loading="eager"
+      >
+    {%- else -%}
+      <div class="quote-bubble-character quote-bubble-character--placeholder">
+        {{ 'image' | placeholder_svg_tag }}
+      </div>
+    {%- endif -%}
+
+    <div class="quote-bubble quote-bubble--{{ bubble_side }}{% if section.settings.bubble_image != blank %} quote-bubble--has-image{% endif %}">
+      {%- if section.settings.bubble_image != blank -%}
+        <img
+          class="quote-bubble-image"
+          src="{{ section.settings.bubble_image | image_url: width: 800 }}"
+          alt=""
+          loading="eager"
+        >
+      {%- endif -%}
+      <p class="quote-bubble-text" data-quote-bubble-text></p>
+    </div>
+  </div>
+</div>
+
+<script id="quote-bubble-data-{{ section.id }}" type="application/json">
+  {{ raw_quotes | json }}
+</script>
+
+<script>
+  (function () {
+    var sectionId = {{ section.id | json }};
+    var root = document.getElementById('quote-bubble-section-' + sectionId);
+    var dataEl = document.getElementById('quote-bubble-data-' + sectionId);
+    if (!root || !dataEl) return;
+
+    var textEl = root.querySelector('[data-quote-bubble-text]');
+    if (!textEl) return;
+
+    var quotes = [];
+    try {
+      quotes = JSON.parse(dataEl.textContent)
+        .map(function (q) { return q.trim(); })
+        .filter(Boolean);
+    } catch (e) {
+      quotes = [];
+    }
+
+    if (!quotes.length) {
+      textEl.textContent = 'Add some quotes in the theme customizer!';
+      return;
+    }
+
+    var pick = quotes[Math.floor(Math.random() * quotes.length)];
+    textEl.textContent = pick;
+  })();
+</script>
+
+<style>
+  #quote-bubble-section-{{ section.id }} {
+    padding: {{ section.settings.padding_top }}px 1rem {{ section.settings.padding_bottom }}px;
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble-stage {
+    position: relative;
+    display: inline-flex;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble-character {
+    display: block;
+    width: 100%;
+    max-width: var(--char-max-width);
+    height: auto;
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble-character--placeholder svg {
+    width: var(--char-max-width);
+    height: auto;
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble {
+    position: absolute;
+    max-width: var(--bubble-max-width);
+    min-width: 140px;
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble--top-right {
+    top: var(--bubble-offset-y);
+    left: calc(100% + var(--bubble-offset-x));
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble--top-left {
+    top: var(--bubble-offset-y);
+    right: calc(100% + var(--bubble-offset-x));
+  }
+
+  /* Speech-bubble image variant: text is layered on top of the artwork */
+  #quote-bubble-section-{{ section.id }} .quote-bubble--has-image {
+    display: grid;
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble-image {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble--has-image .quote-bubble-text {
+    grid-area: 1 / 1;
+    align-self: center;
+    justify-self: center;
+    text-align: center;
+    padding: 12% 16%;
+  }
+
+  /* CSS-drawn fallback bubble, used when no bubble image is uploaded */
+  #quote-bubble-section-{{ section.id }} .quote-bubble:not(.quote-bubble--has-image) .quote-bubble-text {
+    position: relative;
+    background: var(--bubble-bg);
+    color: var(--bubble-color);
+    border-radius: 18px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble--top-right:not(.quote-bubble--has-image) .quote-bubble-text::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 24px;
+    border-width: 12px 10px 0 0;
+    border-style: solid;
+    border-color: var(--bubble-bg) transparent transparent transparent;
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble--top-left:not(.quote-bubble--has-image) .quote-bubble-text::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    right: 24px;
+    border-width: 12px 0 0 10px;
+    border-style: solid;
+    border-color: var(--bubble-bg) transparent transparent transparent;
+  }
+
+  #quote-bubble-section-{{ section.id }} .quote-bubble-text {
+    margin: 0;
+    font-size: var(--bubble-font-size);
+    line-height: 1.35;
+  }
+
+  @media (max-width: 749px) {
+    #quote-bubble-section-{{ section.id }} .quote-bubble-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #quote-bubble-section-{{ section.id }} .quote-bubble {
+      position: static;
+      max-width: min(90vw, var(--bubble-max-width));
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Character Quote Bubble",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Character"
+    },
+    {
+      "type": "image_picker",
+      "id": "character_image",
+      "label": "Character image"
+    },
+    {
+      "type": "range",
+      "id": "character_max_width",
+      "label": "Character max width",
+      "min": 120,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "default": 320
+    },
+    {
+      "type": "header",
+      "content": "Speech bubble"
+    },
+    {
+      "type": "image_picker",
+      "id": "bubble_image",
+      "label": "Speech bubble image (optional)",
+      "info": "Leave blank to use a simple drawn bubble styled with the colors below."
+    },
+    {
+      "type": "select",
+      "id": "bubble_position",
+      "label": "Bubble position",
+      "options": [
+        { "value": "top-right", "label": "Top right of character" },
+        { "value": "top-left", "label": "Top left of character" }
+      ],
+      "default": "top-right"
+    },
+    {
+      "type": "range",
+      "id": "bubble_offset_x",
+      "label": "Bubble horizontal offset",
+      "min": -100,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "bubble_offset_y",
+      "label": "Bubble vertical offset",
+      "min": -150,
+      "max": 150,
+      "step": 5,
+      "unit": "px",
+      "default": -20
+    },
+    {
+      "type": "range",
+      "id": "bubble_max_width",
+      "label": "Bubble max width",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "default": 260
+    },
+    {
+      "type": "color",
+      "id": "bubble_bg_color",
+      "label": "Bubble background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "bubble_text_color",
+      "label": "Bubble text color",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "label": "Quote font size",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Quotes"
+    },
+    {
+      "type": "textarea",
+      "id": "quotes",
+      "label": "Quotes (one per line)",
+      "info": "A random line is shown each time the page loads.",
+      "default": "Welcome to the shop!\nNew drops every week.\nMade in NYC.\nGrab something before it's gone."
+    },
+    {
+      "type": "header",
+      "content": "Section spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "Character Quote Bubble"
+    }
+  ]
+}
+{% endschema %}

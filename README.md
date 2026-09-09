@@ -49,8 +49,8 @@ manage in the theme customizer and shows it in the bubble.
 
 ## Mobile sizing
 
-There's no separate mobile setting to configure — the character width,
-bubble width/height, and quote font size are all defined as
+By default there's no separate mobile setting to configure — the character
+width, bubble width/height, and quote font size are all defined as
 `min(your px setting, a % of the viewport width)`, so they scale down
 smoothly and automatically as the screen narrows, using nothing but the
 same settings you already set for desktop. On a wide screen the px value
@@ -58,6 +58,21 @@ wins (full desktop size, unchanged); on a narrow phone the viewport
 percentage kicks in and shrinks it proportionally. The character and
 bubble keep the same side-by-side layout at every width — nothing
 restacks vertically.
+
+### Or: fully separate desktop and mobile versions
+
+If the shared responsive sizing doesn't get you what you want, the
+**Show on** setting (top of the section settings) lets you run two
+completely independent copies instead:
+
+1. Add the **Character Quote Bubble** section to the Home page a second
+   time (Add section → Character Quote Bubble again).
+2. On one instance, set **Show on** to **Desktop only**; on the other, set
+   it to **Mobile only**.
+3. Configure each instance's character image, size, bubble position,
+   colors, font, etc. completely independently — they don't share any
+   settings. Each only renders in its own breakpoint (CSS `display: none`
+   outside it), so there's never a conflict or a duplicate on-screen.
 
 ## How the randomization works
 

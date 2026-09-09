@@ -279,12 +279,44 @@
       margin-left: calc(var(--bubble-offset-x) + var(--bubble-width));
     }
   }
+
+  {%- comment -%}
+    "Show on" lets this section be added twice — one instance per device —
+    each with fully independent settings, instead of one shared responsive
+    layout. Placed after every other rule above so display: none wins
+    regardless of specificity.
+  {%- endcomment -%}
+  {%- if section.settings.device_visibility == 'desktop' -%}
+    @media (max-width: 749px) {
+      #quote-bubble-section-{{ section.id }} {
+        display: none;
+      }
+    }
+  {%- elsif section.settings.device_visibility == 'mobile' -%}
+    @media (min-width: 750px) {
+      #quote-bubble-section-{{ section.id }} {
+        display: none;
+      }
+    }
+  {%- endif -%}
 </style>
 
 {% schema %}
 {
   "name": "Character Quote Bubble",
   "settings": [
+    {
+      "type": "select",
+      "id": "device_visibility",
+      "label": "Show on",
+      "info": "Add this section twice — one set to Desktop only, one to Mobile only — to give each device fully independent settings (position, size, even a different character or bubble image) instead of one shared responsive layout.",
+      "options": [
+        { "value": "all", "label": "All devices" },
+        { "value": "desktop", "label": "Desktop only" },
+        { "value": "mobile", "label": "Mobile only" }
+      ],
+      "default": "all"
+    },
     {
       "type": "header",
       "content": "Character"

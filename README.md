@@ -45,6 +45,10 @@ manage in the theme customizer and shows it in the bubble.
      image).
    - Edit the **Quotes** field — one quote per line. Add as many as you
      like; a random one is chosen each time the page loads.
+   - Under **Mobile**, **Mobile scale** shrinks the whole character +
+     bubble composition on screens under 750px wide — everything (sizes,
+     offsets, font size) scales down together by that percentage, keeping
+     the exact same side-by-side layout as desktop instead of stacking.
 6. Save.
 
 ## How the randomization works

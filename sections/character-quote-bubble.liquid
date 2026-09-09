@@ -34,6 +34,22 @@
     else
       assign text_justify = 'center'
   endcase
+
+  # Mobile keeps the exact same layout as desktop (character + bubble
+  # positioned the same way relative to each other) just at a smaller
+  # scale, so every size/offset is recomputed here rather than switching
+  # to a different mobile layout.
+  assign mobile_scale = section.settings.mobile_scale | times: 1.0 | divided_by: 100
+  assign m_char_max_width = section.settings.character_max_width | times: mobile_scale | round
+  assign m_char_offset_x = section.settings.character_offset_x | times: mobile_scale | round
+  assign m_char_offset_y = section.settings.character_offset_y | times: mobile_scale | round
+  assign m_bubble_width = section.settings.bubble_width | times: mobile_scale | round
+  assign m_bubble_height = section.settings.bubble_height | times: mobile_scale | round
+  assign m_bubble_offset_x = section.settings.bubble_offset_x | times: mobile_scale | round
+  assign m_bubble_offset_y = section.settings.bubble_offset_y | times: mobile_scale | round
+  assign m_font_size = section.settings.font_size | times: mobile_scale | round
+  assign m_text_offset_x = section.settings.text_offset_x | times: mobile_scale | round
+  assign m_text_offset_y = section.settings.text_offset_y | times: mobile_scale | round
 -%}
 
 <div
@@ -58,6 +74,16 @@
     --bubble-text-justify: {{ text_justify }};
     --bubble-text-offset-x: {{ section.settings.text_offset_x }}px;
     --bubble-text-offset-y: {{ section.settings.text_offset_y }}px;
+    --char-max-width-mobile: {{ m_char_max_width }}px;
+    --char-offset-x-mobile: {{ m_char_offset_x }}px;
+    --char-offset-y-mobile: {{ m_char_offset_y }}px;
+    --bubble-width-mobile: {{ m_bubble_width }}px;
+    --bubble-height-mobile: {{ m_bubble_height }}px;
+    --bubble-offset-x-mobile: {{ m_bubble_offset_x }}px;
+    --bubble-offset-y-mobile: {{ m_bubble_offset_y }}px;
+    --bubble-font-size-mobile: {{ m_font_size }}px;
+    --bubble-text-offset-x-mobile: {{ m_text_offset_x }}px;
+    --bubble-text-offset-y-mobile: {{ m_text_offset_y }}px;
   "
 >
   {%- comment -%}
@@ -82,7 +108,7 @@
     </defs>
   </svg>
 
-  <div class="quote-bubble-stage">
+  <div class="quote-bubble-stage quote-bubble-stage--{{ bubble_side }}">
     {%- if section.settings.character_image != blank -%}
       <img
         class="quote-bubble-character"
@@ -252,29 +278,59 @@
     transform: translate(var(--bubble-text-offset-x), var(--bubble-text-offset-y));
   }
 
+  /* Mobile keeps the exact same layout as desktop — character and bubble
+     positioned the same way relative to each other, absolutely-positioned
+     bubble included — just scaled down using the *-mobile custom
+     properties computed above (Bubble position setting still controls
+     which side the bubble/tail is on). */
   @media (max-width: 749px) {
-    #quote-bubble-section-{{ section.id }} .quote-bubble-stage {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
+    /* The bubble is absolutely positioned, so it isn't counted in the
+       stage's own box width — without this, centering/aligning the stage
+       can push a bubble that's wide relative to the viewport off-screen.
+       Reserving margin equal to its offset + width fixes that, so the
+       character+bubble pair gets centered/aligned as one unit. */
+    #quote-bubble-section-{{ section.id }} .quote-bubble-stage--top-right {
+      margin-right: calc(var(--bubble-offset-x-mobile) + var(--bubble-width-mobile));
     }
 
-    #quote-bubble-section-{{ section.id }} .quote-bubble-character,
-    #quote-bubble-section-{{ section.id }} .quote-bubble-text {
-      /* Position offsets are meant for desktop layout; ignore them on
-         mobile where the character and bubble stack vertically instead. */
-      transform: none;
+    #quote-bubble-section-{{ section.id }} .quote-bubble-stage--top-left {
+      margin-left: calc(var(--bubble-offset-x-mobile) + var(--bubble-width-mobile));
+    }
+
+    #quote-bubble-section-{{ section.id }} .quote-bubble-character {
+      max-width: min(70vw, var(--char-max-width-mobile));
+      transform: translate(var(--char-offset-x-mobile), var(--char-offset-y-mobile));
+    }
+
+    #quote-bubble-section-{{ section.id }} .quote-bubble-character--placeholder svg {
+      width: min(70vw, var(--char-max-width-mobile));
     }
 
     #quote-bubble-section-{{ section.id }} .quote-bubble {
-      position: static;
-      width: min(90vw, var(--bubble-width));
-      height: auto;
+      width: min(80vw, var(--bubble-width-mobile));
+    }
+
+    #quote-bubble-section-{{ section.id }} .quote-bubble--top-right {
+      top: var(--bubble-offset-y-mobile);
+      left: calc(100% + var(--bubble-offset-x-mobile));
+    }
+
+    #quote-bubble-section-{{ section.id }} .quote-bubble--top-left {
+      top: var(--bubble-offset-y-mobile);
+      right: calc(100% + var(--bubble-offset-x-mobile));
+    }
+
+    #quote-bubble-section-{{ section.id }} .quote-bubble--has-image {
+      height: var(--bubble-height-mobile);
     }
 
     #quote-bubble-section-{{ section.id }} .quote-bubble:not(.quote-bubble--has-image) .quote-bubble-text {
-      min-height: 0;
+      min-height: var(--bubble-height-mobile);
+    }
+
+    #quote-bubble-section-{{ section.id }} .quote-bubble-text {
+      font-size: var(--bubble-font-size-mobile);
+      transform: translate(var(--bubble-text-offset-x-mobile), var(--bubble-text-offset-y-mobile));
     }
   }
 </style>
@@ -458,6 +514,21 @@
       "step": 5,
       "unit": "px",
       "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Mobile"
+    },
+    {
+      "type": "range",
+      "id": "mobile_scale",
+      "label": "Mobile scale",
+      "info": "Shrinks the whole character + speech bubble composition on small screens (below 750px) by this percentage, keeping the exact same layout and positions as desktop.",
+      "min": 30,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 65
     },
     {
       "type": "header",

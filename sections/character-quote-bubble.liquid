@@ -60,6 +60,25 @@
     --bubble-text-offset-y: {{ section.settings.text_offset_y }}px;
   "
 >
+  {%- comment -%}
+    Traced from the uploaded reference: a circle body with a small hooked
+    tail on the lower-left. clipPathUnits="objectBoundingBox" lets the
+    same normalized (0–1) path scale to whatever size the bubble box ends
+    up being. A second, horizontally mirrored copy is used when the
+    bubble sits to the left of the character, so the tail always points
+    back toward it.
+  {%- endcomment -%}
+  <svg width="0" height="0" style="position: absolute;" aria-hidden="true" focusable="false">
+    <defs>
+      <clipPath id="quote-bubble-clip-{{ section.id }}" clipPathUnits="objectBoundingBox">
+        <path d="M0.170,0.610 A0.416,0.473 0 1 1 0.170,0.366 C0.086,0.358 0,0.423 0.014,0.520 C0.029,0.585 0.100,0.610 0.170,0.610 Z" />
+      </clipPath>
+      <clipPath id="quote-bubble-clip-mirrored-{{ section.id }}" clipPathUnits="objectBoundingBox">
+        <path d="M0.830,0.610 A0.416,0.473 0 1 0 0.830,0.366 C0.914,0.358 1,0.423 0.986,0.520 C0.971,0.585 0.900,0.610 0.830,0.610 Z" />
+      </clipPath>
+    </defs>
+  </svg>
+
   <div class="quote-bubble-stage">
     {%- if section.settings.character_image != blank -%}
       <img
@@ -194,9 +213,11 @@
   }
 
   /* CSS-drawn fallback bubble, used when no bubble image is uploaded.
-     aspect-ratio keeps it a perfect circle sized to the bubble width by
-     default; min-height is a floor that lets it stretch into a rounded
-     pill instead of clipping if a quote needs more room. */
+     Clipped to a traced speech-bubble silhouette (circle + hooked tail)
+     via the clipPath defs above. aspect-ratio matches the shape's own
+     design proportions so it isn't distorted at the default size;
+     min-height is a floor that lets the box stretch taller — and the
+     shape with it — if a quote needs more room. */
   #quote-bubble-section-{{ section.id }} .quote-bubble:not(.quote-bubble--has-image) .quote-bubble-text {
     position: relative;
     display: flex;
@@ -204,35 +225,17 @@
     justify-content: var(--bubble-text-justify);
     box-sizing: border-box;
     width: 100%;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 700 / 615;
     min-height: var(--bubble-height);
     background: var(--bubble-bg);
     color: var(--bubble-color);
-    border-radius: 50%;
-    padding: 18%;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+    padding: 16% 14%;
+    clip-path: url(#quote-bubble-clip-{{ section.id }});
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
   }
 
-  #quote-bubble-section-{{ section.id }} .quote-bubble--top-right:not(.quote-bubble--has-image) .quote-bubble-text::after {
-    content: '';
-    position: absolute;
-    bottom: 6%;
-    left: 8%;
-    border-width: 12px 10px 0 0;
-    border-style: solid;
-    border-color: var(--bubble-bg) transparent transparent transparent;
-    transform: rotate(20deg);
-  }
-
-  #quote-bubble-section-{{ section.id }} .quote-bubble--top-left:not(.quote-bubble--has-image) .quote-bubble-text::after {
-    content: '';
-    position: absolute;
-    bottom: 6%;
-    right: 8%;
-    border-width: 12px 0 0 10px;
-    border-style: solid;
-    border-color: var(--bubble-bg) transparent transparent transparent;
-    transform: rotate(-20deg);
+  #quote-bubble-section-{{ section.id }} .quote-bubble--top-left:not(.quote-bubble--has-image) .quote-bubble-text {
+    clip-path: url(#quote-bubble-clip-mirrored-{{ section.id }});
   }
 
   #quote-bubble-section-{{ section.id }} .quote-bubble-text {
@@ -336,7 +339,7 @@
       "type": "image_picker",
       "id": "bubble_image",
       "label": "Speech bubble image (optional)",
-      "info": "Leave blank to use a circular drawn bubble styled with the colors below."
+      "info": "Leave blank to use a drawn speech-bubble shape (circle + hooked tail) styled with the colors below."
     },
     {
       "type": "select",
@@ -382,7 +385,7 @@
       "type": "range",
       "id": "bubble_height",
       "label": "Bubble height",
-      "info": "For an uploaded bubble image, the artwork scales to fit inside this height without distorting. For the drawn bubble, this is a minimum height — it's circular by default (matching the width) and stretches into a rounded pill only if a quote needs more room.",
+      "info": "For an uploaded bubble image, the artwork scales to fit inside this height without distorting. For the drawn bubble, this is a minimum height — it keeps its speech-bubble proportions at the default size and only stretches taller if a quote needs more room.",
       "min": 60,
       "max": 400,
       "step": 10,

@@ -28,12 +28,14 @@ manage in the theme customizer and shows it in the bubble.
      position — the speech bubble stays anchored to the character and moves
      with it.
    - Optionally upload a **Speech bubble image**. If you leave it blank, a
-     circular bubble is drawn with CSS using the color settings below it
-     (with a little tail pointing at the character). Use **Bubble width**
-     and **Bubble height** to resize it — an uploaded bubble image scales to
-     fit inside that box without distorting; the drawn bubble is a circle
-     sized to match the width by default and only stretches into a rounded
-     pill if a quote needs more room than the height allows.
+     bubble is drawn with CSS using the color settings below it — shaped
+     like a classic speech bubble (a rounded body with a small hooked tail
+     pointing toward the character; the tail automatically mirrors to the
+     other side depending on **Bubble position**). Use **Bubble width** and
+     **Bubble height** to resize it — an uploaded bubble image scales to fit
+     inside that box without distorting; the drawn bubble keeps its
+     proportions at the default size and only stretches taller if a quote
+     needs more room than the height allows.
    - Set **Bubble position** (top-left/top-right of the character) and
      nudge it into place with the offset sliders.
    - Under **Text**, pick a **Quote font** from your theme's font library,

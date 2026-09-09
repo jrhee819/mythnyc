@@ -193,39 +193,46 @@
     padding: 12% 16%;
   }
 
-  /* CSS-drawn fallback bubble, used when no bubble image is uploaded */
+  /* CSS-drawn fallback bubble, used when no bubble image is uploaded.
+     aspect-ratio keeps it a perfect circle sized to the bubble width by
+     default; min-height is a floor that lets it stretch into a rounded
+     pill instead of clipping if a quote needs more room. */
   #quote-bubble-section-{{ section.id }} .quote-bubble:not(.quote-bubble--has-image) .quote-bubble-text {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: var(--bubble-text-justify);
     box-sizing: border-box;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     min-height: var(--bubble-height);
     background: var(--bubble-bg);
     color: var(--bubble-color);
-    border-radius: 18px;
-    padding: 14px 18px;
+    border-radius: 50%;
+    padding: 18%;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
   }
 
   #quote-bubble-section-{{ section.id }} .quote-bubble--top-right:not(.quote-bubble--has-image) .quote-bubble-text::after {
     content: '';
     position: absolute;
-    bottom: -10px;
-    left: 24px;
+    bottom: 6%;
+    left: 8%;
     border-width: 12px 10px 0 0;
     border-style: solid;
     border-color: var(--bubble-bg) transparent transparent transparent;
+    transform: rotate(20deg);
   }
 
   #quote-bubble-section-{{ section.id }} .quote-bubble--top-left:not(.quote-bubble--has-image) .quote-bubble-text::after {
     content: '';
     position: absolute;
-    bottom: -10px;
-    right: 24px;
+    bottom: 6%;
+    right: 8%;
     border-width: 12px 0 0 10px;
     border-style: solid;
     border-color: var(--bubble-bg) transparent transparent transparent;
+    transform: rotate(-20deg);
   }
 
   #quote-bubble-section-{{ section.id }} .quote-bubble-text {
@@ -329,7 +336,7 @@
       "type": "image_picker",
       "id": "bubble_image",
       "label": "Speech bubble image (optional)",
-      "info": "Leave blank to use a simple drawn bubble styled with the colors below."
+      "info": "Leave blank to use a circular drawn bubble styled with the colors below."
     },
     {
       "type": "select",
@@ -375,7 +382,7 @@
       "type": "range",
       "id": "bubble_height",
       "label": "Bubble height",
-      "info": "For an uploaded bubble image, the artwork scales to fit inside this height without distorting. For the drawn bubble, this is a minimum height — it grows to fit longer quotes.",
+      "info": "For an uploaded bubble image, the artwork scales to fit inside this height without distorting. For the drawn bubble, this is a minimum height — it's circular by default (matching the width) and stretches into a rounded pill only if a quote needs more room.",
       "min": 60,
       "max": 400,
       "step": 10,
